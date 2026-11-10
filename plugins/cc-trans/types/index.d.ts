@@ -23,6 +23,8 @@ declare module 'claude-code' {
       reply: StateFamily<ReplyEntry | null>
       /** Whether the peek view shows a reply block in English, by its row id and text hash. */
       reveal: StateFamily<boolean | null>
+      /** An AskUserQuestion dialog's texts in the person's language, by a hash of its question texts. */
+      ask: StateFamily<Record<string, string> | null>
       prompt: StateFamily<PromptEntry | null>
       preview: Preview | null
       queued: number

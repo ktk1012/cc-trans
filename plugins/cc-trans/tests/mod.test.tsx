@@ -452,6 +452,90 @@ test('the peek view shows the translation, and a button turns one block to Engli
   await plain.unmount()
 })
 
+const QUESTIONS = [
+  {
+    question: 'Which cache should the loop use?',
+    header: 'Cache',
+    multiSelect: false,
+    options: [
+      { label: 'In memory', description: 'Fast, lost on restart.' },
+      { label: 'Redis', description: 'Shared, kept across restarts.' },
+    ],
+  },
+]
+const ASK: Record<string, string> = {
+  'Which cache should the loop use?': '루프에 어떤 캐시를 쓸까요?',
+  'In memory': '메모리',
+  'Fast, lost on restart.': '빠르지만 재시작하면 사라져요.',
+  Redis: 'Redis',
+  'Shared, kept across restarts.': '공유되고 재시작해도 남아요.',
+  '파일에 저장해 주세요': 'Save it to a file',
+}
+
+/** Claude asks QUESTIONS: what the dialog drew once its translation settled, the toasts, and how to answer it. */
+async function ask($: Engine, on: On) {
+  const clock = mock.clock(on)
+  const toasts: string[] = []
+  on('ui.toast', (_$, e) => {
+    toasts.push(e.text)
+    return { value: undefined }
+  })
+  let drawn: unknown
+  on('ui.render', { component: 'AskUserQuestion' }, (_$, e, next) => {
+    drawn = e.props.questions
+    return next(e)
+  })
+  // stands for the dialog: it answers with what the person typed
+  let answer!: (typed: string) => void
+  on('tool.call', { tool: 'AskUserQuestion' }, async () => {
+    const typed = await new Promise<string>(resolve => (answer = resolve))
+    return { result: { questions: QUESTIONS, answers: { 'Which cache should the loop use?': typed } } } as never
+  })
+  await start($, on)
+
+  const call = $.tool.call({ tool: 'AskUserQuestion', questions: QUESTIONS } as never)
+  await clock.settle()
+  const ui = await $.ui.mount({
+    plugin: 'cc-trans',
+    surface: 'terminal',
+    component: 'AskUserQuestion',
+    requestId: 'ask1',
+    props: { tool: 'AskUserQuestion', questions: QUESTIONS },
+  } as never)
+  await ui.unmount()
+  const answered = async (typed: string) => {
+    answer(typed)
+    return ((await call) as { result: { answers: Record<string, string> } }).result.answers
+  }
+  return { drawn, toasts, answered }
+}
+
+test('an AskUserQuestion dialog is drawn translated with its labels as asked, and a typed answer reaches Claude in English', async ($, on) => {
+  fakeModel(on, s => ASK[s] ?? ko(s))
+  const { drawn, toasts, answered } = await ask($, on)
+  expect(drawn).toEqual([
+    {
+      question: '루프에 어떤 캐시를 쓸까요?',
+      header: 'Cache',
+      multiSelect: false,
+      options: [
+        { label: 'In memory', description: '메모리 · 빠르지만 재시작하면 사라져요.' },
+        { label: 'Redis', description: '공유되고 재시작해도 남아요.' },
+      ],
+    },
+  ])
+  expect(await answered('파일에 저장해 주세요')).toEqual({ 'Which cache should the loop use?': 'Save it to a file' })
+  expect(toasts).toEqual([])
+})
+
+test('when translation fails the dialog stays English and a typed answer reaches Claude as typed, each with a toast', async ($, on) => {
+  on('model.complete', () => ({ value: { isAnswered: true as const, text: 'not a JSON array', usage: USAGE } }))
+  const { drawn, toasts, answered } = await ask($, on)
+  expect(drawn).toEqual(QUESTIONS)
+  expect(await answered('파일에 저장해 주세요')).toEqual({ 'Which cache should the loop use?': '파일에 저장해 주세요' })
+  expect(toasts.map(t => t.split(':')[0])).toEqual(['translation failed', 'Translation failed, sent as typed'])
+})
+
 test('plainText takes out inline marks and keeps list markers; plainLines splits the marker off', () => {
   expect(plainText('- **Promise.all**: `tasks`가 끝나면 [문서](https://x.y)를 보세요')).toBe('- Promise.all: tasks가 끝나면 문서를 보세요')
   expect(plainText('## 제목 `a`\n> 인용 *강조* snake_case_name a*b')).toBe('제목 a\n인용 강조 snake_case_name a*b')

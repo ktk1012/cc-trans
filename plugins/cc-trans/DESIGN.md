@@ -150,6 +150,22 @@ re-drains it instead of leaving blocks at "번역 중…".
   Claude read, dim, prefixed `↳`, in the normal view and in ctrl+o alike (the engine marks a prompt row
   `isExpanded` in both).
 
+### Questions: `AskUserQuestion`
+
+- **Dialog**: `tool.call` on `AskUserQuestion` starts translating the dialog's texts (questions, option
+  labels and descriptions; previews are left alone) and stores them in the `ask` state, keyed by a hash of
+  the question texts; the `ui.render` hook on `AskUserQuestion` draws the questions from it. Claude Code
+  draws such a rewrite only while the option labels, previews, the number of questions and `multiSelect`
+  stay as asked, and maps the answers back to the questions as asked, so labels stay English and a
+  label's translation leads its option's description. The dialog opens in English and turns translated
+  when the translation lands; once the person has answered or touched a question, Claude Code keeps it as
+  drawn. On failure it stays English and a toast says why.
+- **Answer**: after `next(e)`, every answer, `response` and annotation note in the person's language is
+  translated to English as a prompt is (a picked label is English and passes as it is), and the hook
+  returns its own `{ result }`. Only for Claude's own calls (`next.origin` the engine): another plugin's
+  `$.ui.ask` takes the person's words as typed. On failure the answer goes as typed and a toast says why.
+  The hook has no `.catch`: one that ran `next(e)` again would open the dialog a second time.
+
 ### Status and settings
 
 The mod's own words (command results, status, pending and failure notes, the hint) are English, like

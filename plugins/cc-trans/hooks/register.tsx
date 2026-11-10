@@ -4,6 +4,7 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { Preview, PromptEntry, ReplyEntry, View } from '../types'
 import { scriptOf, scriptShare } from './detect'
 import { translateUnits, type EngineConfig, type EngineKind, type Io } from './engines'
+import { askTexts, mapAnswers, translatedQuestions, type Answers, type Questions } from './ask'
 import { pickLanguage } from './language'
 import { buildBlock, buildDocument, planMarkdown, unmask, unmaskAt, type Plan, type Unit } from './markdown'
 import { t } from './strings'
@@ -297,6 +298,37 @@ async function needsTranslation($: EngineInterface, text: string): Promise<boole
   return yes
 }
 
+/** What the person wrote, in English for Claude; anything already English as it is. */
+async function toEnglish($: EngineInterface, text: string): Promise<string> {
+  if (!(await needsTranslation($, text))) return text
+  const r = await translatePrompt($, text)
+  if ('error' in r) throw new Error(r.error)
+  return r.english
+}
+
+// --- AskUserQuestion -------------------------------------------------------
+
+/** One dialog as both its call and its drawing see it: by its question texts. */
+const askId = (questions: Questions) => keyOf(questions.map(q => q.question).join('\n'))
+
+/** Translates a dialog's texts for its drawing; on failure the dialog stays English. */
+async function translateAsk($: EngineInterface, questions: Questions) {
+  const id = askId(questions)
+  if (await read($, { plugin: 'cc-trans', key: 'ask', id } as const)) return
+  const texts = askTexts(questions)
+  const plans = texts.map(planMarkdown)
+  const r = await translatePlanUnits($, plans.flatMap(p => p.units), 'en', cfg.language)
+  const translations: Record<string, string> = {}
+  let at = 0
+  plans.forEach((plan, i) => {
+    const out = r.out.slice(at, at + plan.units.length)
+    at += plan.units.length
+    if (out.some(o => o != null)) translations[texts[i]!] = buildDocument(plan, out)
+  })
+  if (Object.keys(translations).length === 0 && r.error) throw new Error(r.error)
+  await update($, { plugin: 'cc-trans', key: 'ask', id } as const, () => translations)
+}
+
 // --- reply queue ---------------------------------------------------------
 
 async function publishQueued($: EngineInterface) {
@@ -504,6 +536,29 @@ export const register: Register = (on, options) => {
     }
     return stored
   }).catch(($, e, next) => next(e))
+
+  // No .catch: one that ran next(e) again would open the dialog a second time.
+  on('tool.call', { tool: 'AskUserQuestion' }, async ($, e, next) => {
+    if (e.tool !== 'AskUserQuestion' || idle() || !(await read($, enabledAtom))) return next(e)
+    // Translated while the dialog is open; its drawing reads the result.
+    void translateAsk($, e.questions).catch(err => $.ui.toast(`${t('failed')}: ${err instanceof Error ? err.message : String(err)}`))
+    const r = await next(e)
+    // Another plugin's $.ui.ask takes the person's words as typed.
+    if (next.origin.plugin !== 'engine' || r.isError || !r.result) return r
+    let changed = false
+    try {
+      const english = await mapAnswers(r.result as Answers, async text => {
+        const en = await toEnglish($, text)
+        if (en !== text) changed = true
+        return en
+      })
+      // A fresh { result }: handed back, the object from next(e) keeps core's own messages.
+      return changed ? { result: english as typeof r.result, ...(r.context ? { context: r.context } : {}) } : r
+    } catch (err) {
+      $.ui.toast(t('promptFailed', err instanceof Error ? err.message : String(err)))
+      return r
+    }
+  })
 
   on('prompt.edit', async ($, e, next) => {
     const box = await next(e)
@@ -729,6 +784,14 @@ export const register: Register = (on, options) => {
         </Box>,
       ),
     )
+  })
+
+  on('ui.render', { component: 'AskUserQuestion' }, async ($, e, next) => {
+    if (idle() || !(await read($, enabledAtom))) return next(e)
+    const questions = e.props.questions as Questions
+    const translations = await read($, { plugin: 'cc-trans', key: 'ask', id: askId(questions) } as const)
+    if (!translations) return next(e)
+    return next({ ...e, props: { ...e.props, questions: translatedQuestions(questions, text => translations[text] ?? text) } })
   })
 
   on('ui.render', { component: 'UserMessage' }, async ($, e, next) => {

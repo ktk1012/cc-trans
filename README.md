@@ -41,6 +41,11 @@ with the English under it:
 `camelCase` and `dotted.members` never go to the translator: they are swapped for placeholders and
 put back byte for byte. Headings, lists, quotes and tables keep their shape line for line.
 
+**Claude's questions in your language.** When Claude asks you something (its question dialog), the
+questions and option descriptions are drawn translated; each option keeps its English label, with its
+translation at the head of the description. Claude still reads your answer in English: what you type
+yourself is translated like a prompt.
+
 **Pick how replies look.** `/translate view <mode>` redraws the whole transcript:
 
 | View | What you see |
