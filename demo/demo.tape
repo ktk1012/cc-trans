@@ -23,7 +23,7 @@ Hide
 # A clean environment when recorded from inside another Claude Code session.
 Type "D=$PWD/demo && rm -rf /tmp/cc-trans-demo && cp -R demo/app /tmp/cc-trans-demo && cd /tmp/cc-trans-demo && unset CLAUDECODE CLAUDE_CODE_CHILD_SESSION CLAUDE_CODE_SESSION_ID CLAUDE_CODE_BRIDGE_SESSION_ID CLAUDE_CODE_MESSAGING_SOCKET CLAUDE_CODE_MESSAGING_TOKEN CLAUDE_PID CLAUDE_CODE_SESSION_ATTENDED CLAUDE_CODE_ENTRYPOINT CLAUDE_EFFORT && clear"
 Enter
-Type "claude --plugin-dir $D/.. --settings $D/settings.json --model sonnet --permission-mode acceptEdits"
+Type "claude --plugin-dir $D/../plugins/cc-trans --settings $D/settings.json --model sonnet --permission-mode acceptEdits"
 Enter
 Sleep 8s
 Type "/clear"

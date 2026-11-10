@@ -1,5 +1,19 @@
 {
   "name": "cc-trans",
-  "owner": { "name": "midagedev" },
-  "plugins": [{ "name": "cc-trans", "source": "./" }]
+  "metadata": {
+    "description": "Claude Code mods: talk to Claude in your own language while it works in English, and turn any answer into a sourced report on demand."
+  },
+  "owner": { "name": "Taekyeom, Kim", "url": "https://github.com/ktk1012" },
+  "plugins": [
+    {
+      "name": "cc-trans",
+      "source": "./plugins/cc-trans",
+      "description": "Write and read in your own language while Claude works in English: prompts go out translated, replies come back with a translation, code untouched."
+    },
+    {
+      "name": "cc-report",
+      "source": "./plugins/cc-report",
+      "description": "A report button under each answer: a fork of the main thread rewrites the answer as a short, sourced report in a side pane, reusing the prompt cache and leaving the conversation untouched."
+    }
+  ]
 }

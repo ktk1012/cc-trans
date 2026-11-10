@@ -10,8 +10,11 @@
 ![韓国語のプロンプトが英語で Claude に届き、Claude がファイルを直したあと、英語の回答の各段落の下に淡い色の翻訳が付く様子。続いて同じトランスクリプトを左右並びと翻訳のみの表示に切り替え](demo/cc-trans.gif)
 
 ```
-/plugin install cc-trans --marketplace midagedev/cc-trans
+/plugin install cc-trans --marketplace ktk1012/cc-trans
 ```
+
+同じマーケットプレイスには [cc-report](plugins/cc-report/README.md) もあります。各回答の下にボタンが付き、
+押すとその回答を出典付きで短くまとめたレポートがサイドペインに表示されます。
 
 ## なぜ cc-trans？
 
@@ -113,13 +116,13 @@ cc-trans は次の順に言語を決めます：自身の `language` オプシ�
 ## 開発
 
 ```
-claude --plugin-dir .          # 読み込む
-claude plugin validate .
-claude plugin test .
+claude --plugin-dir plugins/cc-trans   # 読み込む
+claude plugin validate plugins/cc-trans
+claude plugin test plugins/cc-trans
 vhs demo/demo.tape && demo/render.sh   # デモを撮り直す（vhs、ffmpeg、gifsicle が必要）
 ```
 
-ユニットモデルと表示ルールは [DESIGN.md](DESIGN.md)（英語）にあります。
+ユニットモデルと表示ルールは [DESIGN.md](plugins/cc-trans/DESIGN.md)（英語）にあります。
 
 ## ライセンス
 

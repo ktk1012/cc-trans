@@ -10,8 +10,11 @@
 ![一条韩语提示以英文送达 Claude，Claude 修好文件后，英文回答的每个段落下方都附上浅色译文；随后同一段对话切换为左右对照和仅显示译文](demo/cc-trans.gif)
 
 ```
-/plugin install cc-trans --marketplace midagedev/cc-trans
+/plugin install cc-trans --marketplace ktk1012/cc-trans
 ```
+
+同一个插件市场还提供 [cc-report](plugins/cc-report/README.md)：每个回答下方都有一个按钮，点击后会在侧边窗格中
+显示一份附带出处的简短报告。
 
 ## 为什么用它
 
@@ -108,13 +111,13 @@ cc-trans 按以下顺序确定你的语言：它自己的 `language` 选项、Cl
 ## 开发
 
 ```
-claude --plugin-dir .          # 加载
-claude plugin validate .
-claude plugin test .
+claude --plugin-dir plugins/cc-trans   # 加载
+claude plugin validate plugins/cc-trans
+claude plugin test plugins/cc-trans
 vhs demo/demo.tape && demo/render.sh   # 重新录制演示（需要 vhs、ffmpeg、gifsicle）
 ```
 
-单元模型和显示规则见 [DESIGN.md](DESIGN.md)（英文）。
+单元模型和显示规则见 [DESIGN.md](plugins/cc-trans/DESIGN.md)（英文）。
 
 ## 许可证
 

@@ -10,8 +10,11 @@
 ![한국어 프롬프트가 영어로 Claude에게 전달되고, Claude가 파일을 고친 뒤 영어 답변 문단마다 흐린 한국어 번역이 붙는 모습. 이어서 같은 대화를 나란히 보기와 번역만 보기로 전환](demo/cc-trans.gif)
 
 ```
-/plugin install cc-trans --marketplace midagedev/cc-trans
+/plugin install cc-trans --marketplace ktk1012/cc-trans
 ```
+
+같은 marketplace에는 [cc-report](plugins/cc-report/README.md)도 있습니다. 답변마다 아래에 버튼이 붙고, 누르면
+그 답변을 출처와 함께 짧게 정리한 보고가 side pane에 나타납니다.
 
 ## 왜 쓰나요
 
@@ -113,13 +116,13 @@ URL, 식별자는 밖으로 나가기 전에 자리표시자로 바꿉니다.
 ## 개발
 
 ```
-claude --plugin-dir .          # 불러오기
-claude plugin validate .
-claude plugin test .
+claude --plugin-dir plugins/cc-trans   # 불러오기
+claude plugin validate plugins/cc-trans
+claude plugin test plugins/cc-trans
 vhs demo/demo.tape && demo/render.sh   # 데모 다시 녹화 (vhs, ffmpeg, gifsicle 필요)
 ```
 
-단위 모델과 표시 규칙은 [DESIGN.md](DESIGN.md)(영어)에 있습니다.
+단위 모델과 표시 규칙은 [DESIGN.md](plugins/cc-trans/DESIGN.md)(영어)에 있습니다.
 
 ## 라이선스
 

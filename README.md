@@ -10,8 +10,11 @@ in English, and each paragraph gets a quiet translation right under it. Code is 
 ![A Korean prompt reaches Claude in English; Claude fixes the file, and its English answers get a muted Korean translation under each paragraph, then the same transcript side by side and translated only](demo/cc-trans.gif)
 
 ```
-/plugin install cc-trans --marketplace midagedev/cc-trans
+/plugin install cc-trans --marketplace ktk1012/cc-trans
 ```
+
+The same marketplace also carries [cc-report](plugins/cc-report/README.md): a button under each answer
+that shows a short, sourced report of it in a side pane.
 
 ## Why
 
@@ -115,13 +118,13 @@ block keeps its English and says the translation failed. Nothing is ever blocked
 ## Development
 
 ```
-claude --plugin-dir .          # load it
-claude plugin validate .
-claude plugin test .
+claude --plugin-dir plugins/cc-trans   # load it
+claude plugin validate plugins/cc-trans
+claude plugin test plugins/cc-trans
 vhs demo/demo.tape && demo/render.sh   # re-record the demo (needs vhs, ffmpeg, gifsicle)
 ```
 
-See [DESIGN.md](DESIGN.md) for the unit model and the display rules.
+See [DESIGN.md](plugins/cc-trans/DESIGN.md) for the unit model and the display rules.
 
 ## License
 
