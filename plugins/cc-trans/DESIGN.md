@@ -123,6 +123,7 @@ are drawn by the engine untouched.
 | `stacked` | each block as Claude wrote it; right under it the translation as plain text (inline marks taken out) in the theme's `subtle` color, 2 columns in and 4 short of the right edge; a list item keeps its hanging indent | drawn once, untranslated |
 | `interleave` | each prose/heading/list/quote/table block in English, then its translation right under it in the accent color behind a `▎` gutter | drawn once, untranslated |
 | `side` | one row per block: English left, translation right, aligned block by block | drawn once at full width |
+| `mirror` | `side` mirrored: the translation left as Markdown, the English right as plain text in the theme's `subtle` color; below 100 columns, `translated` | drawn once at full width |
 | `translated` | the translated document only, reads like a native reply; English is one keypress away (`/translate view`) | in place, untranslated |
 | `original` | English only (translation off for display) | — |
 
@@ -166,7 +167,7 @@ Claude Code's own interface, whatever the person's language: only translations a
 | --- | --- | --- |
 | `language` | empty | the person's language; empty follows Claude Code's `language` setting, then `LC_ALL`/`LC_MESSAGES`/`LANG`; nothing set means English, nothing translated |
 | `engine` | `haiku` | `haiku` · `openai` · `command` |
-| `view` | `auto` | `auto` · `interleave` · `side` · `translated` · `original` |
+| `view` | `auto` | `auto` · `stacked` · `interleave` · `side` · `mirror` · `below` · `translated` · `original` |
 | `preview` | `true` | live preview band |
 | `haikuModel` | `haiku` | model for the haiku engine and fallback |
 | `openaiBaseUrl`, `openaiModel`, `openaiApiKey` (sensitive) | empty | OpenAI-compatible endpoint |

@@ -15,7 +15,7 @@ const viewAtom = atom({ plugin: 'cc-trans', key: 'view' } as const, null)
 const previewAtom = atom({ plugin: 'cc-trans', key: 'preview' } as const, null)
 const queuedAtom = atom({ plugin: 'cc-trans', key: 'queued' } as const, 0)
 
-const VIEWS: View[] = ['auto', 'stacked', 'interleave', 'side', 'below', 'translated', 'original']
+const VIEWS: View[] = ['auto', 'stacked', 'interleave', 'side', 'mirror', 'below', 'translated', 'original']
 const PERSON_ORIGINS = new Set(['composer', 'bridge', 'sdk'])
 const MAX_IN_FLIGHT = 3
 const PREVIEW_DELAY_MS = 700
@@ -442,7 +442,7 @@ export const register: Register = (on, options) => {
     await resolveLanguage($)
     await $.command.register({
       name: 'translate',
-      description: 'Translation: on, off, status, or view <auto|interleave|side|below|translated|original>.',
+      description: 'Translation: on, off, status, or view <auto|stacked|interleave|side|mirror|below|translated|original>.',
       argumentHint: '[on|off|status|view <mode>]',
     })
     $.clock.every(250, () => {
@@ -611,6 +611,7 @@ export const register: Register = (on, options) => {
     const columns = e.viewport?.columns ?? 0
     if (view === 'auto') view = columns >= SIDE_MIN_COLUMNS ? 'side' : 'stacked'
     if (view === 'side' && columns > 0 && columns < 100) view = 'stacked'
+    if (view === 'mirror' && columns > 0 && columns < 100) view = 'translated'
     if (view === 'original') return next(e)
 
     const plan = planMarkdown(text)
@@ -686,26 +687,27 @@ export const register: Register = (on, options) => {
       const below = `${text}\n\n${quote(foldedTranslation(plan, entry.out))}`
       return withFooter(await next({ ...e, props: { ...e.props, text: below } }))
     }
-    // side by side, block by block: the English left, its translation right;
-    // code and other untranslated blocks once, across the whole width. Drawn
-    // from Markdown of its own: the engine's node may not sit in a sized Box.
+    // side by side, block by block: `side` the English left, its translation
+    // right; `mirror` the other way round. Code and other untranslated blocks
+    // once, across the whole width. Drawn from Markdown of its own: the
+    // engine's node may not sit in a sized Box.
     return withFooter(
       bulleted(
         <Box flexDirection="column" rowGap={1} flexGrow={1}>
-          {stackedBlocks(plan, entry.out).map((r, i) =>
-            r.translation === null ? (
-              <Markdown key={`b${i}`} text={r.original} />
-            ) : (
+          {stackedBlocks(plan, entry.out).map((r, i) => {
+            if (r.translation === null) return <Markdown key={`b${i}`} text={r.original} />
+            const [main, aside] = view === 'mirror' ? [r.translation, r.original] : [r.original, r.translation]
+            return (
               <Box key={`b${i}`} flexDirection="row" columnGap={3}>
                 <Box width="50%" flexDirection="column">
-                  <Markdown text={r.original} />
+                  <Markdown text={main} />
                 </Box>
                 <Box width="50%" flexDirection="column">
-                  {muted(r.translation)}
+                  {muted(aside)}
                 </Box>
               </Box>
-            ),
-          )}
+            )
+          })}
         </Box>,
       ),
     )

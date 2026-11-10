@@ -360,6 +360,45 @@ test('the side view draws each English block beside its translation from its own
   await ui.unmount()
 })
 
+test('the mirror view draws each translation as Markdown beside its muted English, and only the translation when narrow', { options: { view: 'mirror' } }, async ($, on) => {
+  const clock = mock.clock(on)
+  fakeModel(on, ko)
+  engineStandIn(on)
+  await start($, on)
+  await $.session.append({
+    door: 'response',
+    origin: { kind: 'model', model: 'claude' },
+    uuid: 'r5',
+    message: { type: 'assistant', role: 'assistant', content: [{ type: 'text', text: REPLY }] },
+  } as never)
+  await clock.advance(300)
+  await clock.settle()
+  const mount = (columns: number) =>
+    $.ui.mount({
+      plugin: 'cc-trans',
+      surface: 'terminal',
+      component: 'AssistantMessage',
+      requestId: 'r5',
+      viewport: { columns, rows: 40 },
+      props: { text: REPLY, isFirstOfReply: true },
+    } as never)
+
+  let ui = await mount(160)
+  expect((await ui.find({ type: 'Markdown', text: /루프가 매번/ }))?.text).toBe('루프가 매번 `fetchUser()`를 호출해요.')
+  expect(await ui.find({ type: 'Markdown', text: /^The loop calls/ })).toBeUndefined()
+  const en1 = await ui.find({ type: 'Text', text: /^The loop calls/ })
+  expect(en1?.text).toBe('The loop calls fetchUser() on every pass.')
+  expect(en1?.props.color).toBe('subtle')
+  expect((await ui.find({ type: 'Markdown', text: /for \(const id/ }))?.text).toBe('```ts\nfor (const id of ids) await fetchUser(id)\n```')
+  await ui.unmount()
+
+  ui = await mount(80)
+  const drawn = (await ui.find({ type: 'Text', text: /루프 고치기/ }))?.text ?? ''
+  expect(drawn).toContain('## 루프 고치기')
+  expect(drawn).not.toContain('The loop calls')
+  await ui.unmount()
+})
+
 test('plainText takes out inline marks and keeps list markers; plainLines splits the marker off', () => {
   expect(plainText('- **Promise.all**: `tasks`가 끝나면 [문서](https://x.y)를 보세요')).toBe('- Promise.all: tasks가 끝나면 문서를 보세요')
   expect(plainText('## 제목 `a`\n> 인용 *강조* snake_case_name a*b')).toBe('제목 a\n인용 강조 snake_case_name a*b')

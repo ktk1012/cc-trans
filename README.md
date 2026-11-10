@@ -47,6 +47,7 @@ put back byte for byte. Headings, lists, quotes and tables keep their shape line
 | --- | --- |
 | `stacked` | each paragraph as Claude wrote it, its translation right under it, indented and muted |
 | `side` | English left, translation right, block by block |
+| `mirror` | translation left, English right, block by block |
 | `translated` | the translation only, code in place |
 | `interleave` | each paragraph, then its translation as a quote |
 | `below` | the English reply, then the whole translation |
