@@ -15,7 +15,7 @@ const viewAtom = atom({ plugin: 'cc-trans', key: 'view' } as const, null)
 const previewAtom = atom({ plugin: 'cc-trans', key: 'preview' } as const, null)
 const queuedAtom = atom({ plugin: 'cc-trans', key: 'queued' } as const, 0)
 
-const VIEWS: View[] = ['auto', 'stacked', 'interleave', 'side', 'mirror', 'below', 'translated', 'original']
+const VIEWS: View[] = ['auto', 'stacked', 'interleave', 'side', 'mirror', 'below', 'translated', 'peek', 'original']
 const PERSON_ORIGINS = new Set(['composer', 'bridge', 'sdk'])
 const MAX_IN_FLIGHT = 3
 const PREVIEW_DELAY_MS = 700
@@ -442,7 +442,7 @@ export const register: Register = (on, options) => {
     await resolveLanguage($)
     await $.command.register({
       name: 'translate',
-      description: 'Translation: on, off, status, or view <auto|stacked|interleave|side|mirror|below|translated|original>.',
+      description: 'Translation: on, off, status, or view <auto|stacked|interleave|side|mirror|below|translated|peek|original>.',
       argumentHint: '[on|off|status|view <mode>]',
     })
     $.clock.every(250, () => {
@@ -583,7 +583,7 @@ export const register: Register = (on, options) => {
       if (!jobs.has(key) && !inflight.has(key)) wanted.set(key, text)
     }
 
-    const { Box, Text, Markdown } = $.ui.resolve(e)
+    const { Box, Button, Text, Markdown } = $.ui.resolve(e)
 
     if (entry.status === 'pending') {
       const row = await next(e)
@@ -679,6 +679,24 @@ export const register: Register = (on, options) => {
     }
     if (view === 'translated') {
       return withFooter(await next({ ...e, props: { ...e.props, text: buildDocument(plan, entry.out) } }))
+    }
+    if (view === 'peek') {
+      // Keyed by row and text: a row may hold several blocks, and two rows the same text.
+      const reveal = { plugin: 'cc-trans', key: 'reveal', id: `${e.requestId}:${key}` } as const
+      const revealed = (await read($, reveal)) === true
+      const row = await next(revealed ? e : { ...e, props: { ...e.props, text: buildDocument(plan, entry.out) } })
+      // The terminal reports clicks on transcript rows only in fullscreen.
+      if (e.surface === 'terminal' && e.viewport?.isFullscreen === false) return withFooter(row)
+      return withFooter(
+        <Box flexDirection="column">
+          {row}
+          <Box paddingLeft={2}>
+            <Button key="original" plain onPress={() => void update($, reveal, shown => !shown)}>
+              <Text dimColor>▸ {t(revealed ? 'showTranslation' : 'showOriginal')}</Text>
+            </Button>
+          </Box>
+        </Box>,
+      )
     }
     if (view === 'interleave') {
       return withFooter(await next({ ...e, props: { ...e.props, text: interleave(plan, entry.out) } }))

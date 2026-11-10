@@ -1,6 +1,6 @@
 {
   "name": "cc-trans",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Write and read in your own language while Claude works in English: prompts go out translated, replies come back with a translation, code untouched.",
   "license": "MIT",
   "types": "./types/index.d.ts",
@@ -21,9 +21,9 @@
     "view": {
       "type": "string",
       "title": "How replies are shown",
-      "description": "auto: side by side when the terminal is wide, else stacked. stacked: each paragraph as Claude wrote it, its translation dimmed under it. interleave: each paragraph followed by its translation. side: English left, translation right. mirror: translation left, English right. below: English, then the whole translation. translated: translation only. original: English only.",
+      "description": "auto: side by side when the terminal is wide, else stacked. stacked: each paragraph as Claude wrote it, its translation dimmed under it. interleave: each paragraph followed by its translation. side: English left, translation right. mirror: translation left, English right. below: English, then the whole translation. translated: translation only. peek: translation only, with a button under each block that shows it in English (in the fullscreen terminal). original: English only.",
       "default": "auto",
-      "options": ["auto", "stacked", "interleave", "side", "mirror", "below", "translated", "original"]
+      "options": ["auto", "stacked", "interleave", "side", "mirror", "below", "translated", "peek", "original"]
     },
     "preview": {
       "type": "boolean",

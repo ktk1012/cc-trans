@@ -399,6 +399,59 @@ test('the mirror view draws each translation as Markdown beside its muted Englis
   await ui.unmount()
 })
 
+test('the peek view shows the translation, and a button turns one block to English and back', { options: { view: 'peek' } }, async ($, on) => {
+  const clock = mock.clock(on)
+  fakeModel(on, ko)
+  engineStandIn(on)
+  await start($, on)
+  const OTHER = 'The loop calls `fetchUser()` on every pass.'
+  for (const [uuid, text] of [['r6', REPLY], ['r7', OTHER]]) {
+    await $.session.append({
+      door: 'response',
+      origin: { kind: 'model', model: 'claude' },
+      uuid,
+      message: { type: 'assistant', role: 'assistant', content: [{ type: 'text', text }] },
+    } as never)
+  }
+  await clock.advance(300)
+  await clock.settle()
+  const mount = (requestId: string, text: string, isFullscreen: boolean) =>
+    $.ui.mount({
+      plugin: 'cc-trans',
+      surface: 'terminal',
+      component: 'AssistantMessage',
+      requestId,
+      viewport: { columns: 120, rows: 40, isFullscreen },
+      props: { text, isFirstOfReply: true },
+    } as never)
+  type Ui = Awaited<ReturnType<typeof mount>>
+  const shown = async (ui: Ui) => (await ui.find({ type: 'Text', text: /loop|루프/ }))?.text ?? ''
+
+  const ui = await mount('r6', REPLY, true)
+  expect(await shown(ui)).toContain('## 루프 고치기')
+  expect(await shown(ui)).not.toContain('The loop calls')
+  expect(await ui.find({ type: 'Text', text: /show original/ })).toBeDefined()
+
+  await ui.press({ key: 'original' })
+  expect(await shown(ui)).toBe(REPLY)
+  expect(await ui.find({ type: 'Text', text: /show translation/ })).toBeDefined()
+
+  // only the pressed block turned
+  const other = await mount('r7', OTHER, true)
+  expect(await shown(other)).toBe('루프가 매번 `fetchUser()`를 호출해요.')
+  await other.unmount()
+
+  await ui.press({ key: 'original' })
+  expect(await shown(ui)).toContain('## 루프 고치기')
+  await ui.unmount()
+
+  // the terminal's main screen reports no clicks: no button there
+  const plain = await mount('r7', OTHER, false)
+  expect(await shown(plain)).toBe('루프가 매번 `fetchUser()`를 호출해요.')
+  expect(await plain.find({ type: 'Button' })).toBeUndefined()
+  await plain.unmount()
+})
+
 test('plainText takes out inline marks and keeps list markers; plainLines splits the marker off', () => {
   expect(plainText('- **Promise.all**: `tasks`가 끝나면 [문서](https://x.y)를 보세요')).toBe('- Promise.all: tasks가 끝나면 문서를 보세요')
   expect(plainText('## 제목 `a`\n> 인용 *강조* snake_case_name a*b')).toBe('제목 a\n인용 강조 snake_case_name a*b')

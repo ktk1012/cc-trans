@@ -26,6 +26,8 @@ type Key =
   | 'from_setting'
   | 'from_locale'
   | 'from_none'
+  | 'showOriginal'
+  | 'showTranslation'
 
 const EN: Record<Key, string> = {
   code: 'code',
@@ -52,6 +54,8 @@ const EN: Record<Key, string> = {
   from_setting: "from Claude Code's language setting",
   from_locale: 'from the system locale',
   from_none: 'nothing set: no translation',
+  showOriginal: 'show original',
+  showTranslation: 'show translation',
 }
 
 export function t(key: Key, ...args: string[]): string {

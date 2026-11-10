@@ -49,6 +49,7 @@ put back byte for byte. Headings, lists, quotes and tables keep their shape line
 | `side` | English left, translation right, block by block |
 | `mirror` | translation left, English right, block by block |
 | `translated` | the translation only, code in place |
+| `peek` | the translation only, with a button under each block that shows that block in English (fullscreen terminal) |
 | `interleave` | each paragraph, then its translation as a quote |
 | `below` | the English reply, then the whole translation |
 | `original` | English only |

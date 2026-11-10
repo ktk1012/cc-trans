@@ -1,4 +1,4 @@
-export type View = 'auto' | 'stacked' | 'interleave' | 'side' | 'mirror' | 'below' | 'translated' | 'original'
+export type View = 'auto' | 'stacked' | 'interleave' | 'side' | 'mirror' | 'below' | 'translated' | 'peek' | 'original'
 
 /** One reply block's translation, keyed by a hash of the block's text. */
 export type ReplyEntry = {
@@ -21,6 +21,8 @@ declare module 'claude-code' {
       enabled: boolean
       view: View | null
       reply: StateFamily<ReplyEntry | null>
+      /** Whether the peek view shows a reply block in English, by its row id and text hash. */
+      reveal: StateFamily<boolean | null>
       prompt: StateFamily<PromptEntry | null>
       preview: Preview | null
       queued: number
