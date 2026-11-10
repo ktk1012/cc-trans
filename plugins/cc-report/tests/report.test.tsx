@@ -73,7 +73,7 @@ test('a report row under an answer forks once and shows the report in the pane',
   await ui.press({ key: 'report' })
   expect(prompts).toHaveLength(1)
   expect(prompts[0]).toContain(`<answer>\n${ANSWER}\n</answer>`)
-  expect(prompts[0]).toContain('Write the report in Korean,')
+  expect(prompts[0]).toContain('Write the report in Korean, in Markdown, even where this conversation asks for another language.')
   // shown again from what was written, not forked again
   await ui.press({ key: 'report' })
   expect(prompts).toHaveLength(1)

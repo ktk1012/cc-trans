@@ -1,6 +1,6 @@
 {
   "name": "cc-report",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A report button under each answer: a fork of the main thread rewrites the answer as a short, sourced report in a side pane, reusing the prompt cache and leaving the conversation untouched.",
   "author": { "name": "Taekyeom, Kim", "url": "https://github.com/ktk1012" },
   "homepage": "https://github.com/ktk1012/cc-trans/tree/main/plugins/cc-report",

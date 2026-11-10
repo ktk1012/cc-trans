@@ -71,7 +71,7 @@ function reportPrompt(answer: string, language: string): string {
     ``,
     `Keep it within about 350 words (about 1,500 characters in Chinese, Japanese or Korean). Go over only to keep a load-bearing source or a real uncertainty.`,
     ``,
-    `Write the report in ${language}, in Markdown. Where the person's instructions in this conversation govern language or terminology, follow them; otherwise the rules, shape and length here win.`,
+    `Write the report in ${language}, in Markdown, even where this conversation asks for another language. Where the person's instructions in this conversation govern terminology, follow them; otherwise the rules, shape and length here win.`,
     ``,
     `<answer>`,
     answer,
