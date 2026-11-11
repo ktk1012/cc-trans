@@ -167,3 +167,13 @@ test('a sentence period after Hangul is not masked; dotted members are one span'
   expect(u?.text).toBe('⟦0⟧과 ⟦1⟧ 차이를 알려줘. 코드와 파일은 빼고')
   expect(maskText('see ./src and ~/x, then . and .. alone')?.spans).toEqual(['./src', '~/x'])
 })
+
+test('a path followed by a particle or a closing backtick is masked in linear time', () => {
+  const line = '작업 트리는 `~/dev/.worktrees/lambdadb-iac/prod-eun1-cluster`이고 설정은 ./kubernetes/clusters/prod-eun1에 있다.'
+  const started = performance.now()
+  const u = maskText(line)
+  const elapsed = performance.now() - started
+  expect(u?.spans).toEqual(['`~/dev/.worktrees/lambdadb-iac/prod-eun1-cluster`', './kubernetes/clusters/prod-eun1'])
+  // Far above the linear cost, far below trying every split of a path segment (hundreds of ms per path).
+  expect(elapsed).toBeLessThan(100)
+})

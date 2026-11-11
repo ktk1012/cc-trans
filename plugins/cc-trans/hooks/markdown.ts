@@ -39,7 +39,8 @@ const INLINE_PATTERNS: RegExp[] = [
   /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,
   // paths: rooted, home, relative, or with two or more slashes
   /(?<![\w/.~-])(?:~|\.{1,2})?\/[\w.@+-]+(?:\/[\w.@+-]*)*(?::\d+(?::\d+)?)?/g,
-  /(?<![\w/.~-])(?:~|\.{1,2})\/(?:[\w.@+-]+\/?)*(?::\d+(?::\d+)?)?(?=[\s,;:!?)\]]|$)/g,
+  // segments between single slashes, written so a failed lookahead cannot try every split of a segment
+  /(?<![\w/.~-])(?:~|\.{1,2})\/(?:[\w.@+-]+(?:\/[\w.@+-]+)*\/?)?(?::\d+(?::\d+)?)?(?=[\s,;:!?)\]]|$)/g,
   /(?<![\w/.-])[\w.@+-]+\/[\w.@+-]+\/[\w.@+/-]*(?::\d+(?::\d+)?)?/g,
   /(?<![\w/.-])[\w@+-]+(?:\/[\w@+-]+)*\/[\w@+-]+\.[A-Za-z0-9]{1,8}(?::\d+(?::\d+)?)?(?![\w])/g,
   // bare file names with a known extension
